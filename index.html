@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pathway Trade-Off Planner</title>
+<style>
+:root{--forest:#013220;--gold:#C6A15B;--warm:#7B7B7B;--ivory:#F8F5E9;--char:#333333;--sage:#A3B18A;--coral:#D97A6A;--sky:#89B6A5;--sage-tint:#E4EADA;--coral-tint:#F7E0DB;--sky-tint:#DCEBE5;--white:#FFFFFF}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html{font-size:100%}
+body{margin:0;background:var(--ivory);color:var(--char);font-family:Verdana,"DejaVu Sans",sans-serif;font-size:1.125rem;line-height:1.6}
+.skip{position:absolute;left:-999px;top:0;background:var(--white);color:var(--forest);padding:.6rem 1rem;z-index:10;font-weight:bold}
+.skip:focus{left:12px;top:8px}
+header.band{background:var(--forest);color:var(--ivory);padding:1.5rem 1rem 1.75rem;border-bottom:5px solid var(--gold)}
+.wrap{max-width:52rem;margin:0 auto}
+.kicker{color:var(--gold);font-weight:bold;font-size:1rem;letter-spacing:.04em;margin:0 0 .4rem}
+h1{font-size:1.9rem;line-height:1.25;margin:0 0 .5rem}
+header p{margin:0;font-size:1.125rem}
+main{max-width:52rem;margin:0 auto;padding:1.5rem 1rem 3rem}
+h2{color:var(--forest);font-size:1.5rem;line-height:1.3;margin:0 0 .75rem}
+h3{color:var(--forest);font-size:1.25rem;line-height:1.3;margin:1.25rem 0 .5rem}
+h2:focus{outline:none}
+p{margin:0 0 1rem}
+.card{background:var(--white);border:2px solid var(--sage);border-radius:10px;padding:1.25rem;margin:0 0 1.25rem}
+.note{background:var(--sky-tint);border-left:6px solid var(--forest);padding:.75rem 1rem;border-radius:0 8px 8px 0;margin:0 0 1.25rem}
+.warn{background:var(--coral-tint);border-left:6px solid var(--coral);padding:.75rem 1rem;border-radius:0 8px 8px 0;margin:0 0 1rem;color:#5a1f14}
+fieldset{border:2px solid var(--warm);border-radius:8px;margin:0 0 1rem;padding:.75rem 1rem 1rem;background:var(--white);min-width:0}
+legend{font-weight:bold;color:var(--forest);padding:0 .4rem;font-size:1.125rem}
+.opts{display:flex;flex-wrap:wrap;gap:.5rem;margin-top:.5rem}
+.opt{display:flex;align-items:center;gap:.5rem;border:2px solid var(--warm);border-radius:8px;padding:.5rem .75rem;min-height:48px;background:var(--white);cursor:pointer;font-size:1rem}
+.opt input{width:1.25rem;height:1.25rem;margin:0;accent-color:var(--forest)}
+.opt:has(input:checked){background:var(--sage-tint);border-color:var(--forest);font-weight:bold}
+label.lbl{display:block;font-weight:bold;color:var(--forest);margin:0 0 .35rem}
+.hint{font-size:1rem;margin:0 0 .5rem;color:#4a4a4a}
+input[type=text],input[type=number],textarea,select{width:100%;font:inherit;font-size:1rem;color:var(--char);background:var(--white);border:2px solid var(--warm);border-radius:8px;padding:.6rem .7rem;min-height:48px}
+textarea{min-height:6.5rem;resize:vertical}
+button{font:inherit;font-size:1rem;cursor:pointer;min-height:48px;border-radius:8px;padding:.6rem 1.25rem;font-weight:bold}
+.btn{background:var(--forest);color:var(--ivory);border:2px solid var(--forest)}
+.btn:hover{background:#024a2f}
+.btn2{background:var(--white);color:var(--forest);border:2px solid var(--forest)}
+.btn2:hover{background:var(--sage-tint)}
+.row{display:flex;flex-wrap:wrap;gap:.75rem;margin-top:1rem}
+:focus-visible{outline:3px solid var(--forest);outline-offset:3px}
+.btn:focus-visible{outline-color:var(--forest);box-shadow:0 0 0 3px var(--ivory),0 0 0 6px var(--forest)}
+.progress{font-size:1rem;font-weight:bold;color:var(--forest);margin:0 0 .5rem}
+.bar{height:12px;background:var(--sage-tint);border:2px solid var(--sage);border-radius:8px;overflow:hidden;margin:0 0 1.25rem}
+.bar span{display:block;height:100%;background:var(--forest)}
+.err{margin:0 0 1rem}
+.err:empty{display:none}
+.badge{display:inline-block;background:var(--forest);color:var(--ivory);border-radius:6px;padding:.1rem .6rem;font-size:1rem;font-weight:bold;margin-left:.5rem}
+.badge.alt{background:var(--sage-tint);color:var(--forest);border:2px solid var(--forest)}
+ul.plain{margin:0 0 1rem;padding-left:1.4rem}
+ul.plain li{margin:.25rem 0}
+.score{font-weight:bold}
+.fallback{width:100%;min-height:10rem;font-family:Verdana,"DejaVu Sans",sans-serif}
+footer{max-width:52rem;margin:0 auto;padding:1rem 1rem 2.5rem;border-top:2px solid var(--sage);font-size:1rem}
+footer p{margin:0 0 .5rem}
+.tablewrap{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:1rem}
+th,td{border:2px solid var(--warm);padding:.5rem .6rem;text-align:left;vertical-align:top;background:var(--white)}
+th{background:var(--forest);color:var(--ivory)}
+.printonly{display:none}
+@media (max-width:520px){h1{font-size:1.6rem}.opts{flex-direction:column}.opt{width:100%}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important}}
+@media (forced-colors:active){.opt:has(input:checked){outline:3px solid Highlight}}
+@media print{
+  body{background:#fff;color:#000;font-size:12pt}
+  header.band{background:#fff;color:#000;border-bottom:2px solid #000;padding:0 0 .5rem}
+  .kicker{color:#000}
+  .noprint,.skip,.row,.progress,.bar{display:none!important}
+  .card{border:1px solid #000;break-inside:avoid}
+  th{background:#fff;color:#000}
+  .printonly{display:block}
+  a{color:#000}
+}
+
+.rung{border-color:var(--sage)}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(13rem,1fr));gap:.75rem 1rem}
+.field{margin:0 0 .5rem}
+.stops{display:grid;grid-template-columns:repeat(auto-fit,minmax(16rem,1fr));gap:1rem;margin:0 0 1.25rem}
+.stops .card{margin:0}
+.stops h3{margin-top:0}
+dl{margin:0}
+dt{font-weight:bold;color:var(--forest);margin-top:.75rem}
+dd{margin:0}
+dd.flag{background:var(--coral-tint);border-left:6px solid var(--coral);padding:.3rem .6rem;color:#5a1f14}
+details{background:var(--white);border:2px solid var(--sage);border-radius:10px;padding:.75rem 1.25rem;margin:0 0 1.25rem}
+summary{font-weight:bold;color:var(--forest);cursor:pointer;min-height:44px;display:flex;align-items:center}
+.small{font-size:1rem}
+.sr{position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden}
+a{color:#024a2f}
+@media print{.stops{display:block}.stops .card{margin-bottom:.75rem}details{border:1px solid #000}}
+</style>
+</head>
+<body>
+<a class="skip" href="#main">Skip to main content</a>
+<header class="band"><div class="wrap">
+<p class="kicker">PLANNING TOOL</p>
+<h1>Pathway Trade-Off Planner</h1>
+<p>See what a short program, a step-by-step path, or a longer program could mean for your time, your money, and your pay.</p>
+</div></header>
+<main id="main">
+<noscript><div class="warn">This tool needs JavaScript turned on. Without it, you can still use the questions in the printed list: ask your college for the time to finish, the total cost, what graduates earn, and what comes next.</div></noscript>
+
+<div id="app" hidden>
+<p class="progress" id="prog"></p>
+<div class="bar" aria-hidden="true"><span id="barfill"></span></div>
+
+<section id="s1" aria-labelledby="h1a">
+<h2 id="h1a" tabindex="-1">Step 1. Your situation</h2>
+<div class="note"><p style="margin:0">Start with what is true for you right now. A path only works if you can fit it into your life. You enter every number yourself. Nothing is saved or sent anywhere.</p></div>
+<div class="err warn" id="err1" role="alert"></div>
+<div class="card">
+<div class="field"><label class="lbl" for="hrs">How many hours a week could you give to classes and homework?</label>
+<p class="hint" id="hrsH">A rough number is fine. Think about work, family, and travel.</p>
+<input type="number" id="hrs" min="1" max="80" inputmode="decimal" aria-describedby="hrsH"></div>
+<div class="field"><label class="lbl" for="hor">How long could you be in school or training before you need more income?</label>
+<select id="hor"><option value="">Choose one</option><option value="6">Up to 6 months</option><option value="12">Up to 1 year</option><option value="24">Up to 2 years</option><option value="999">More than 2 years</option><option value="0">I am not sure</option></select></div>
+<div class="grid2">
+<div class="field"><label class="lbl" for="need">Monthly pay you need, in dollars</label>
+<p class="hint" id="needH">Before taxes. Your rent, food, transportation, and other costs. A rough number is fine.</p>
+<input type="number" id="need" min="0" inputmode="decimal" aria-describedby="needH"></div>
+<div class="field"><label class="lbl" for="now">Monthly pay you earn now, in dollars (optional)</label>
+<p class="hint" id="nowH">Before taxes. Leave blank if you prefer.</p>
+<input type="number" id="now" min="0" inputmode="decimal" aria-describedby="nowH"></div>
+</div>
+</div>
+<div class="row"><button type="button" class="btn" id="to2">Next: Build your path</button></div>
+</section>
+
+<section id="s2" aria-labelledby="h2a" hidden>
+<h2 id="h2a" tabindex="-1">Step 2. Build your path</h2>
+<div class="note"><p style="margin:0">A path is a list of steps. Each step is a program. After each step you could stop and work, or keep going. Choose an example to start, then change anything so it matches your college and your choices.</p></div>
+<div class="warn"><p style="margin:0"><strong>These examples are only examples.</strong> They are common kinds of routes, not a promise that one step leads to the next. The names, times, costs, and pay are blank on purpose. Fill them in from your college and from real job data.</p></div>
+<div class="err warn" id="err2" role="alert"></div>
+<fieldset><legend>Start from an example</legend>
+<div class="opts" id="presets"></div></fieldset>
+<p class="small">To look up pay for a job, use the <a href="https://emrg-fs.github.io/California-Occupation-Explorer/" target="_blank" rel="noopener">California Occupation Explorer<span class="sr"> (opens in a new tab)</span></a>. Use the pay near the low end (the 10th to 25th percentile) for the low end of a first job. Use the middle (the median) for the middle of the range. Enter the hourly pay.</p>
+<div id="rungs"></div>
+<div class="row">
+<button type="button" class="btn2" id="addR">Add a step</button>
+<button type="button" class="btn2" id="delR">Remove the last step</button>
+</div>
+<p class="small" id="rungMsg" role="status"></p>
+<div class="row">
+<button type="button" class="btn2" id="back1">Back</button>
+<button type="button" class="btn" id="to3">Next: See the trade-offs</button>
+</div>
+</section>
+
+<section id="s3" aria-labelledby="h3a" hidden>
+<h2 id="h3a" tabindex="-1">Step 3. Your trade-offs</h2>
+<div id="results"></div>
+<div class="row noprint">
+<button type="button" class="btn" id="copyBtn">Copy my summary</button>
+<button type="button" class="btn2" id="printBtn">Print</button>
+<button type="button" class="btn2" id="back2">Change my path</button>
+</div>
+<p class="small" id="copyMsg" role="status"></p>
+<div id="fbWrap" hidden><label class="lbl" for="fb">Copy this text yourself (select all, then copy)</label><textarea id="fb" class="fallback" readonly></textarea></div>
+
+<details class="noprint">
+<summary>What research says about short programs and stacking credentials</summary>
+<p class="small">These are averages from studies of specific groups in specific years. They do not predict what will happen to you. They are here so you know what questions to ask.</p>
+<ul class="plain small">
+<li><strong>Many short-certificate earners do come back.</strong> In a study of California community college students who earned short-term certificates, 23 percent earned another credential within three years. (Public Policy Institute of California, 2018.) That means most did not, so continuing is a choice to plan for, not a given.</li>
+<li><strong>Stacking helps some people more than others.</strong> A national review described the earnings effect of earning more than one credential as "weakly positive and inconsistent." (Community College Research Center, Working Paper 97, 2017.) The same review found no clear evidence about noncredit awards in a stack.</li>
+<li><strong>What the second credential is matters.</strong> A Virginia study of credit-bearing programs found larger gains when the second credential was an associate degree, and a second certificate showed no significant effect. Staying in the same broad field did better than repeating the same specific program. (Meyer, Bird, and Castleman.)</li>
+<li><strong>Health programs vary a lot.</strong> A study of California community college health programs found that registered nursing and dental hygiene nearly doubled earnings within six years, while some shorter nursing and medical assistant programs did not show significant gains. More than half of students who started with a short-term health award came back within three years, but only about 20 percent finished a higher health award. (Public Policy Institute of California, October 2025.)</li>
+<li><strong>Noncredit programs vary by field.</strong> A study of about 128,000 Texas noncredit students found average gains of about $2,000 a year, with larger gains in fields such as construction and engineering technology and little or none in business and information sciences. It was done in Texas, not California. (Bahr and Columbus, 2025.)</li>
+<li><strong>Credit that counts is worth asking about.</strong> The review above found noncredit programs rarely lead into degree programs unless credit is given for them. That is why this tool asks whether the credit from each step counts toward the next.</li>
+</ul>
+</details>
+</section>
+</div>
+</main>
+<footer>
+<p>This tool is for planning. It does not predict your future, decide whether you qualify for anything, or replace talking with a counselor or advisor. Pay and cost numbers are the ones you entered.</p>
+<p>Developed by Educational Management Resources Group (EMRG).</p>
+</footer>
+
+<script>
+(function(){
+var $=function(id){return document.getElementById(id)};
+var PRESETS=[
+ {k:'health',l:'Healthcare',r:['Phlebotomy certificate (short, may be noncredit)','Licensed Vocational Nurse (LVN) program','Registered Nurse (RN), associate degree']},
+ {k:'auto',l:'Automotive',r:['Lube technician training (short, may be noncredit)','Automotive technician certificate','Automotive technology, associate degree']},
+ {k:'it',l:'Information technology',r:['IT support certificate','Networking or cybersecurity certificate','Information technology, associate degree']},
+ {k:'biz',l:'Business and office',r:['Office assistant certificate','Bookkeeping or accounting certificate','Business, associate degree']},
+ {k:'esl',l:'English or basic skills first',r:['English as a Second Language (ESL) or basic skills|onramp','','']},
+ {k:'blank',l:'Start from blank',r:['','']}
+];
+var rungs=[],cur=1,lastText='';
+var MAXR=4,MINR=2,FT=2080;
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
+function blank(n,t){return {n:n||'',t:t||'job',m:'',h:'',c:'',cr:'',lo:'',mid:'',op:''}}
+function val(id){var e=$(id);return e?e.value.trim():''}
+function num(v){if(v===''||v==null)return null;var x=parseFloat(v);return isNaN(x)||x<0?null:x}
+function money(x){return '$'+Math.round(x).toLocaleString('en-US')}
+function mo1(n){return n+(n===1?' month':' months')}
+function mo(x){var y=x/12;return x+(x===1?' month':' months')+(x>=12?' (about '+(Math.round(y*10)/10)+' years)':'')}
+
+/* presets */
+var ph='';PRESETS.forEach(function(p,i){ph+='<label class="opt"><input type="radio" name="preset" value="'+p.k+'"> '+esc(p.l)+'</label>'});
+$('presets').innerHTML=ph;
+$('presets').addEventListener('change',function(e){
+  var k=e.target.value,p=PRESETS.filter(function(x){return x.k===k})[0];if(!p)return;
+  rungs=p.r.map(function(s){var a=s.split('|');return blank(a[0],a[1]||'job')});
+  renderRungs();$('rungMsg').textContent='Example loaded: '+p.l+'. You can change every part of it.';
+});
+
+/* rungs */
+function readRungs(){
+  rungs=rungs.map(function(r,i){var p='r'+i+'_';if(!$(p+'n'))return r;
+    return {n:val(p+'n'),t:val(p+'t')||'job',m:val(p+'m'),h:val(p+'h'),c:val(p+'c'),cr:val(p+'cr'),lo:val(p+'lo'),mid:val(p+'mid'),op:val(p+'op')}});
+}
+function renderRungs(){
+  var h='';
+  rungs.forEach(function(r,i){var p='r'+i+'_',on=r.t==='onramp',last=i===rungs.length-1;
+    h+='<fieldset class="rung"><legend>Step '+(i+1)+'</legend>';
+    h+='<div class="field"><label class="lbl" for="'+p+'n">Name of the program</label><input type="text" id="'+p+'n" value="'+esc(r.n)+'" autocomplete="off"></div>';
+    h+='<div class="field"><label class="lbl" for="'+p+'t">What kind of step is it?</label><select id="'+p+'t" data-i="'+i+'"><option value="job"'+(on?'':' selected')+'>Job training or degree (leads to a job)</option><option value="onramp"'+(on?' selected':'')+'>On-ramp (English, basic skills, or getting ready)</option></select></div>';
+    h+='<div class="grid2">';
+    h+='<div class="field"><label class="lbl" for="'+p+'m">Months to finish</label><input type="number" id="'+p+'m" min="0" inputmode="decimal" value="'+esc(r.m)+'"></div>';
+    h+='<div class="field"><label class="lbl" for="'+p+'h">Hours a week it needs</label><input type="number" id="'+p+'h" min="0" inputmode="decimal" value="'+esc(r.h)+'"></div>';
+    h+='<div class="field"><label class="lbl" for="'+p+'c">Cost you would pay, in dollars</label><input type="number" id="'+p+'c" min="0" inputmode="decimal" value="'+esc(r.c)+'"></div>';
+    h+='</div>';
+    if(!last){h+='<div class="field"><label class="lbl" for="'+p+'cr">Does the credit from this step count toward the next step?</label><select id="'+p+'cr"><option value="">Choose one</option><option value="yes"'+(r.cr==='yes'?' selected':'')+'>Yes</option><option value="no"'+(r.cr==='no'?' selected':'')+'>No</option><option value="unsure"'+(r.cr==='unsure'?' selected':'')+'>I do not know yet</option></select></div>'}
+    if(on){h+='<div class="field"><label class="lbl" for="'+p+'op">What does this step open next?</label><p class="hint">For example, a program you can now enter. No pay is shown for an on-ramp.</p><input type="text" id="'+p+'op" value="'+esc(r.op)+'" autocomplete="off"></div>'}
+    else{h+='<div class="grid2"><div class="field"><label class="lbl" for="'+p+'lo">Low end of pay in the job this step leads to, per hour</label><input type="number" id="'+p+'lo" min="0" inputmode="decimal" value="'+esc(r.lo)+'"></div>';
+      h+='<div class="field"><label class="lbl" for="'+p+'mid">Middle of pay in that job, per hour</label><input type="number" id="'+p+'mid" min="0" inputmode="decimal" value="'+esc(r.mid)+'"></div></div>'}
+    h+='</fieldset>';
+  });
+  $('rungs').innerHTML=h;
+  $('addR').disabled=rungs.length>=MAXR;$('delR').disabled=rungs.length<=MINR;
+  rungs.forEach(function(r,i){$('r'+i+'_t').addEventListener('change',function(){readRungs();rungs[i].t=$('r'+i+'_t').value;renderRungs();$('r'+i+'_t').focus()})});
+}
+$('addR').addEventListener('click',function(){readRungs();if(rungs.length<MAXR){rungs.push(blank());renderRungs();$('rungMsg').textContent='Step '+rungs.length+' added.';$('r'+(rungs.length-1)+'_n').focus()}});
+$('delR').addEventListener('click',function(){readRungs();if(rungs.length>MINR){rungs.pop();renderRungs();$('rungMsg').textContent='Last step removed. You now have '+rungs.length+' steps.'}});
+
+/* navigation */
+function show(n){cur=n;[1,2,3].forEach(function(i){$('s'+i).hidden=i!==n});
+  $('prog').textContent='Step '+n+' of 3';$('barfill').style.width=(n/3*100)+'%';
+  var h=$(['','h1a','h2a','h3a'][n]);h.focus();window.scrollTo(0,0)}
+$('to2').addEventListener('click',function(){
+  var e=[];if(num(val('hrs'))===null||num(val('hrs'))<=0)e.push('Enter how many hours a week you could give to classes and homework.');
+  if(num(val('need'))===null)e.push('Enter the monthly pay you need. A rough number is fine.');
+  $('err1').innerHTML=e.length?e.join('<br>'):'';if(e.length){return}
+  if(!rungs.length){rungs=[blank(),blank()];renderRungs()}
+  show(2)});
+$('back1').addEventListener('click',function(){readRungs();show(1)});
+$('to3').addEventListener('click',function(){
+  readRungs();var e=[];
+  if(!rungs.some(function(r){return r.n}))e.push('Name at least one program, or choose an example.');
+  $('err2').innerHTML=e.join('<br>');if(e.length){return}
+  buildResults();show(3)});
+$('back2').addEventListener('click',function(){show(2)});
+
+/* results */
+function buildResults(){
+  var hrsAvail=num(val('hrs')),hor=val('hor'),need=num(val('need')),now=num(val('now'));
+  var cards=[],cumM=0,cumC=0,mUnk=false,cUnk=false,hMax=0,hUnk=false,firstReach=null;
+  rungs.forEach(function(r,i){
+    var m=num(r.m),c=num(r.c),h=num(r.h);
+    if(m===null)mUnk=true;else cumM+=m;
+    if(c===null)cUnk=true;else cumC+=c;
+    if(h===null)hUnk=true;else hMax=Math.max(hMax,h);
+    var nm=r.n||('Step '+(i+1)),L=[];
+    L.push(['Time in school or training so far',mUnk?'Ask the college. A step has no time entered.':mo(cumM),
+      (!mUnk&&hor&&hor!=='0'&&cumM>parseFloat(hor))?'This is longer than the time you said you could be in school before you need more income.':'']);
+    L.push(['Total you would pay so far',cUnk?'Ask the college. A step has no cost entered.':money(cumC),'']);
+    L.push(['Hours a week needed (the most of any step so far)',hUnk?'Ask the college. A step has no hours entered.':hMax+' hours a week',
+      (!hUnk&&hMax>hrsAvail)?'This is more than the '+hrsAvail+' hours a week you said you could give.':'']);
+    if(r.t==='onramp'){
+      L.push(['What this step opens next',r.op||'Ask the college what this step opens next.','']);
+      L.push(['Pay','An on-ramp is not shown with pay. It is a way into the next step.','']);
+    }else{
+      var lo=num(r.lo),mid=num(r.mid),loM=lo===null?null:lo*FT/12,midM=mid===null?null:mid*FT/12;
+      if(loM===null&&midM===null){L.push(['Pay in the job this step leads to','You did not enter pay. Look it up in the California Occupation Explorer before you decide.','Pay is missing, so this step cannot be compared.'])}
+      else{
+        L.push(['Pay in this job, per month before taxes',(loM!==null?'Low end '+money(loM):'Low end not entered')+'. '+(midM!==null?'Middle '+money(midM):'Middle not entered')+'.','']);
+        var cmp=[];if(need!==null){[['low end',loM],['middle',midM]].forEach(function(p){if(p[1]!==null){var d=p[1]-need;cmp.push('The '+p[0]+' is '+money(Math.abs(d))+(d>=0?' above':' below')+' the '+money(need)+' a month you said you need.')}})}
+        if(cmp.length)L.push(['Compared with what you need',cmp.join(' '),(loM!==null&&loM<need&&(midM===null||midM<need))?'Even the middle of the range is below your need.':'']);
+        if(need!==null&&midM!==null&&midM>=need&&firstReach===null)firstReach={n:nm,i:i,m:mUnk?null:cumM};
+        if(now!==null&&midM!==null){var g=midM-now;
+          if(g>0&&!cUnk&&cumC>0){L.push(['Compared with what you earn now','The middle of the range is '+money(g)+' a month above what you earn now. At that difference it would take about '+mo1(Math.ceil(cumC/g))+' of work to earn back the '+money(cumC)+' cost so far. This leaves out taxes, financial aid, and time without a job.',''])}
+          else if(g>0){L.push(['Compared with what you earn now','The middle of the range is '+money(g)+' a month above what you earn now.',''])}
+          else{L.push(['Compared with what you earn now','The middle of the range is not above what you earn now.',''])}
+        }
+      }
+    }
+    if(i<rungs.length-1){var cr=r.cr;
+      L.push(['Does the credit count toward the next step?',cr==='yes'?'Yes, you said it does. Confirm this with the college in writing.':cr==='no'?'No, you said it does not. You may repeat some classes.':'Not known yet. Ask the college.',cr==='yes'?'':'Ask: if I take step '+(i+2)+', will the classes from this step count?']);
+    }
+    cards.push({title:'Stop after step '+(i+1)+': '+nm,L:L});
+  });
+  var sum=[];
+  sum.push('You said you could give '+hrsAvail+' hours a week'+(hor&&hor!=='0'?' and be in school or training for '+$('hor').options[$('hor').selectedIndex].text.toLowerCase():'')+'. You need about '+money(need)+' a month before taxes'+(now!==null?' and earn about '+money(now)+' a month now.':'.'));
+  if(firstReach)sum.push('At the middle of the pay range you entered, the first step that reaches the pay you need is "'+firstReach.n+'"'+(firstReach.m!==null?', after about '+mo(firstReach.m)+' of school or training.':'.')+' The low end of the range may be lower, especially in a first job.');
+  else sum.push('At the pay numbers you entered, no step reaches the monthly pay you need. That does not mean the path is wrong. Check the pay numbers, and ask how people in this job move up.');
+  var contStop=rungs.length>1&&rungs[0].t==='job'?'A short first step can lead to work sooner. Going on to the next step costs more time and money, and it is your choice. About 23 percent of California short-term certificate earners earned another credential within three years, so plan for the longer path only if it fits your life.':'';
+  var html='<div class="card"><h3 style="margin-top:0">Your situation</h3>';sum.forEach(function(s){html+='<p>'+esc(s)+'</p>'});if(contStop)html+='<p>'+esc(contStop)+'</p>';html+='</div>';
+  html+='<h3>Side by side: where you could stop</h3><p class="small">Pay is per month before taxes, using 40 hours a week for a full year (2,080 hours). Real hours, taxes, and job openings will differ. The pay shown is a range for the job, not a promise for you.</p><div class="stops">';
+  cards.forEach(function(c){html+='<div class="card"><h3>'+esc(c.title)+'</h3><dl>';c.L.forEach(function(l){html+='<dt>'+esc(l[0])+'</dt><dd>'+esc(l[1])+'</dd>'+(l[2]?'<dd class="flag"><strong>Check:</strong> '+esc(l[2])+'</dd>':'')});html+='</dl></div>'});
+  html+='</div>';
+  var four=['How long will it take to finish, and how many hours a week?','What is the total cost after financial aid, including books, fees, and supplies?','What do graduates earn, and how many get a job in this field?','What comes next, and will the credit from this program count toward it?'];
+  var bring=['Which step could I stop after and still get a job that pays what I need?','If I stop after the first step, how do I come back later?','What help is there for the hours and costs that worry me most?'];
+  html+='<div class="card"><h3 style="margin-top:0">Four things to ask the college</h3><ol class="plain">'+four.map(function(x){return '<li>'+esc(x)+'</li>'}).join('')+'</ol><h3>Bring to your counselor or advisor</h3><ul class="plain">'+bring.map(function(x){return '<li>'+esc(x)+'</li>'}).join('')+'</ul></div>';
+  $('results').innerHTML=html;
+  var t='PATHWAY TRADE-OFF PLAN\n\n'+sum.join('\n')+(contStop?'\n'+contStop:'')+'\n\n';
+  cards.forEach(function(c){t+=c.title.toUpperCase()+'\n';c.L.forEach(function(l){t+='- '+l[0]+': '+l[1]+(l[2]?' (Check: '+l[2]+')':'')+'\n'});t+='\n'});
+  t+='FOUR THINGS TO ASK THE COLLEGE\n'+four.map(function(x,i){return (i+1)+'. '+x}).join('\n')+'\n\nBRING TO YOUR COUNSELOR OR ADVISOR\n'+bring.map(function(x){return '- '+x}).join('\n')+'\n\nPay is per month before taxes, based on 2,080 hours a year, from the numbers you entered. This is a planning aid, not a prediction.\nDeveloped by Educational Management Resources Group (EMRG).';
+  lastText=t;
+}
+$('copyBtn').addEventListener('click',function(){
+  var ok=function(){$('copyMsg').textContent='Your summary was copied.';$('fbWrap').hidden=true};
+  var fb=function(){$('fbWrap').hidden=false;$('fb').value=lastText;$('fb').focus();$('fb').select();$('copyMsg').textContent='Copy was blocked. The text is below. Select it and copy it.'};
+  if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(lastText).then(ok,fb)}else fb();
+});
+$('printBtn').addEventListener('click',function(){window.print()});
+
+$('app').hidden=false;show(1);window.scrollTo(0,0);
+})();
+</script>
+</body>
+</html>
