@@ -109,7 +109,8 @@ a{color:#024a2f}
 
 <section id="s1" aria-labelledby="h1a">
 <h2 id="h1a" tabindex="-1">Step 1. Your situation</h2>
-<div class="note"><p style="margin:0">Start with what is true for you right now. A path only works if you can fit it into your life. You enter every number yourself. Nothing is saved or sent anywhere.</p></div>
+<div id="vid" hidden class="note"><p style="margin:0 0 .75rem"><strong>New to this tool?</strong> A short how-to video shows how to use each step.</p><a class="btn" id="vidLink" href="#" target="_blank" rel="noopener" style="display:inline-block;text-decoration:none;line-height:1.9">Watch the how-to video<span class="sr"> (opens in a new tab)</span></a></div>
+<div class="note"><p style="margin:0 0 .75rem">Start with what is realistic for you right now. A path only works if you can fit it into your life.</p><p style="margin:0 0 .75rem">But also consider stretching. A little more time each week, or a longer path, may be worth it if it leads to pay that supports you. A counselor or advisor can help you look at what could make that possible.</p><p style="margin:0">You enter every number yourself. Nothing is saved or sent anywhere.</p></div>
 <div class="err warn" id="err1" role="alert"></div>
 <div class="card">
 <div class="field"><label class="lbl" for="hrs">How many hours a week could you give to classes and homework?</label>
@@ -119,12 +120,28 @@ a{color:#024a2f}
 <select id="hor"><option value="">Choose one</option><option value="6">Up to 6 months</option><option value="12">Up to 1 year</option><option value="24">Up to 2 years</option><option value="999">More than 2 years</option><option value="0">I am not sure</option></select></div>
 <div class="grid2">
 <div class="field"><label class="lbl" for="need">Monthly pay you need, in dollars</label>
-<p class="hint" id="needH">Before taxes. Your rent, food, transportation, and other costs. A rough number is fine.</p>
+<p class="hint" id="needH">Before taxes. Your rent, food, transportation, and other costs. If you are not sure, use the helpers below.</p>
 <input type="number" id="need" min="0" inputmode="decimal" aria-describedby="needH"></div>
 <div class="field"><label class="lbl" for="now">Monthly pay you earn now, in dollars (optional)</label>
 <p class="hint" id="nowH">Before taxes. Leave blank if you prefer.</p>
 <input type="number" id="now" min="0" inputmode="decimal" aria-describedby="nowH"></div>
 </div>
+</div>
+<div class="card">
+<h3 style="margin-top:0">Not sure what number to use? Two helpers</h3>
+<div class="field"><label class="lbl" for="hh">Option 1. How many people are in your household?</label>
+<p class="hint" id="hhH">This fills in 200 percent of the 2026 federal poverty guideline, a common minimum to aim for. It is a starting point, not a promise of what your costs are.</p>
+<select id="hh" aria-describedby="hhH"><option value="">Choose one</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option><option>7</option><option>8</option></select></div>
+<p id="hhOut" role="status" class="small"></p>
+<div class="row" style="margin-top:0"><button type="button" class="btn2" id="hhUse" hidden>Use this as the pay I need</button></div>
+<h4 style="margin:1.25rem 0 .5rem;color:var(--forest)">Option 2. Change an hourly wage into monthly pay</h4>
+<div class="grid2">
+<div class="field"><label class="lbl" for="cvR">Hourly pay, in dollars</label><input type="number" id="cvR" min="0" step="0.01" inputmode="decimal"></div>
+<div class="field"><label class="lbl" for="cvH">Hours you work in a week</label><input type="number" id="cvH" min="0" max="80" inputmode="decimal"></div>
+</div>
+<p id="cvOut" role="status" class="small"></p>
+<div class="row" style="margin-top:0"><button type="button" class="btn2" id="cvNeed" hidden>Use as the pay I need</button><button type="button" class="btn2" id="cvNow" hidden>Use as the pay I earn now</button></div>
+<p class="small" style="margin-top:1rem">Want a number for your county and the people in your home? The <a href="https://www.calworkforce.org/self-sufficiency-standard" target="_blank" rel="noopener">California Self-Sufficiency Standard calculator<span class="sr"> (opens in a new tab)</span></a> from the Center for Women's Welfare at the University of Washington (2024 data) estimates the income a household needs to meet basic needs. Its number may be higher or lower than the helper above. Enter whichever number you trust in the box above.</p>
 </div>
 <div class="row"><button type="button" class="btn" id="to2">Next: Build your path</button></div>
 </section>
@@ -319,6 +336,24 @@ $('copyBtn').addEventListener('click',function(){
   if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(lastText).then(ok,fb)}else fb();
 });
 $('printBtn').addEventListener('click',function(){window.print()});
+
+
+/* helpers */
+var VIDEO_URL='';
+if(VIDEO_URL){$('vidLink').href=VIDEO_URL;$('vid').hidden=false}
+var FPL1=15960,FPLADD=5680;
+$('hh').addEventListener('change',function(){var n=parseInt(this.value,10);
+  if(!n){$('hhOut').textContent='';$('hhUse').hidden=true;return}
+  var y=(FPL1+FPLADD*(n-1))*2,m=y/12;$('hhOut').textContent='For '+n+(n===1?' person':' people')+', 200 percent of the 2026 federal poverty guideline is '+money(y)+' a year, or about '+money(m)+' a month before taxes. That is about $'+(y/FT).toFixed(2)+' an hour for a full-time job (40 hours a week).';
+  $('hhUse').hidden=false;$('hhUse').dataset.v=Math.round(m)});
+$('hhUse').addEventListener('click',function(){$('need').value=this.dataset.v;$('hhOut').textContent+=' Filled in above.';$('need').focus()});
+function cv(){var r=num(val('cvR')),h=num(val('cvH'));
+  if(r===null||h===null||h===0){$('cvOut').textContent='';$('cvNeed').hidden=true;$('cvNow').hidden=true;return}
+  var m=r*h*52/12;$('cvOut').textContent='$'+r.toFixed(2)+' an hour for '+h+' hours a week is about '+money(m)+' a month before taxes ('+r.toFixed(2)+' x '+h+' hours x 52 weeks, divided by 12 months).';
+  $('cvNeed').dataset.v=$('cvNow').dataset.v=Math.round(m);$('cvNeed').hidden=false;$('cvNow').hidden=false}
+$('cvR').addEventListener('input',cv);$('cvH').addEventListener('input',cv);
+$('cvNeed').addEventListener('click',function(){$('need').value=this.dataset.v;$('cvOut').textContent+=' Filled in as the pay you need.';$('need').focus()});
+$('cvNow').addEventListener('click',function(){$('now').value=this.dataset.v;$('cvOut').textContent+=' Filled in as the pay you earn now.';$('now').focus()});
 
 $('app').hidden=false;show(1);window.scrollTo(0,0);
 })();
