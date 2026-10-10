@@ -88,6 +88,7 @@ dd.flag{background:var(--coral-tint);border-left:6px solid var(--coral);padding:
 details{background:var(--white);border:2px solid var(--sage);border-radius:10px;padding:.75rem 1.25rem;margin:0 0 1.25rem}
 summary{font-weight:bold;color:var(--forest);cursor:pointer;min-height:44px;display:flex;align-items:center}
 .small{font-size:1rem}
+.help{border:2px dashed var(--sage);background:var(--ivory);margin:0 0 .75rem;padding:.25rem 1rem}.help ul{margin:.5rem 0 .75rem;padding-left:1.3rem}.help li{margin:.4rem 0}
 .sr{position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden}
 a{color:#024a2f}
 @media print{.stops{display:block}.stops .card{margin-bottom:.75rem}details{border:1px solid #000}}
@@ -149,7 +150,7 @@ a{color:#024a2f}
 <section id="s2" aria-labelledby="h2a" hidden>
 <h2 id="h2a" tabindex="-1">Step 2. Build your path</h2>
 <div class="note"><p style="margin:0">A path is a list of steps. Each step is a program. After each step you could stop and work, or keep going. Choose an example to start, then change anything so it matches your college and your choices.</p></div>
-<div class="warn"><p style="margin:0"><strong>These examples are only examples.</strong> They are common kinds of routes, not a promise that one step leads to the next. The names, times, costs, and pay are blank on purpose. Fill them in from your college and from real job data.</p></div>
+<div class="warn"><p style="margin:0"><strong>These examples are only examples.</strong> They are common kinds of routes, not a promise that one step leads to the next. The times, costs, and pay are blank on purpose, because they are different at each college. Each step has a "Where do I find this information?" box to help you fill them in.</p></div>
 <div class="err warn" id="err2" role="alert"></div>
 <fieldset><legend>Start from an example</legend>
 <div class="opts" id="presets"></div></fieldset>
@@ -208,6 +209,14 @@ var PRESETS=[
  {k:'esl',l:'English or basic skills first',r:['English as a Second Language (ESL) or basic skills|onramp','','']},
  {k:'blank',l:'Start from blank',r:['','']}
 ];
+var HELP='<details class="help"><summary>Where do I find this information?</summary><ul class="small">'
+ +'<li><strong>Program name, and what comes next:</strong> Search your college website for the field plus the word certificate or degree. Many colleges show a program page with the classes and a sample schedule. A counselor can tell you which programs fit together.</li>'
+ +'<li><strong>Months to finish:</strong> Look for the number of units in the program and how many units you could take each term. If you cannot tell, ask the counselor to map it out for you.</li>'
+ +'<li><strong>Hours a week:</strong> Count class time plus homework time. Ask the program or a counselor what is typical for students who also work or care for family.</li>'
+ +'<li><strong>Cost you would pay:</strong> Add the enrollment fee, books, supplies, and any test or license fees. The state sets the fee for credit classes, and one college lists $46 per unit for 2026-27, so check your own college fee page. Financial aid may lower what you pay. Ask the financial aid office, and enter what you would pay. Noncredit programs may cost less, so ask.</li>'
+ +'<li><strong>Pay in the job:</strong> Use the California Occupation Explorer (linked above). To see what California community college graduates earned 2 and 5 years later, try <a href="https://salarysurfer.cccco.edu/SalarySurfer.aspx" target="_blank" rel="noopener">Salary Surfer<span class="sr"> (opens in a new tab)</span></a>. These are averages for past graduates, not a promise.</li>'
+ +'<li><strong>Does the credit count?</strong> Ask a counselor: "If I finish this program, will the classes count toward the next one?" Ask where it is written down, for example in the catalog.</li>'
+ +'</ul></details>';
 var rungs=[],cur=1,lastText='';
 var MAXR=4,MINR=2,FT=2080;
 function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
@@ -237,6 +246,7 @@ function renderRungs(){
   rungs.forEach(function(r,i){var p='r'+i+'_',on=r.t==='onramp',last=i===rungs.length-1;
     h+='<fieldset class="rung"><legend>Step '+(i+1)+'</legend>';
     h+='<div class="field"><label class="lbl" for="'+p+'n">Name of the program</label><input type="text" id="'+p+'n" value="'+esc(r.n)+'" autocomplete="off"></div>';
+    h+=HELP;
     h+='<div class="field"><label class="lbl" for="'+p+'t">What kind of step is it?</label><select id="'+p+'t" data-i="'+i+'"><option value="job"'+(on?'':' selected')+'>Job training or degree (leads to a job)</option><option value="onramp"'+(on?' selected':'')+'>On-ramp (English, basic skills, or getting ready)</option></select></div>';
     h+='<div class="grid2">';
     h+='<div class="field"><label class="lbl" for="'+p+'m">Months to finish</label><input type="number" id="'+p+'m" min="0" inputmode="decimal" value="'+esc(r.m)+'"></div>';
